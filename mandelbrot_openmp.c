@@ -77,18 +77,13 @@ int main()
                 if(k >= ITER){
                     r[i][j] = 0; g[i][j] = 0; b[i][j] = 0;
                 }
-                else{
-                    r[i][j] = 255; g[i][j] = 255; b[i][j] = 255;
-                }
-                
-                /*
                 else
                 {
                     c = (int)(255.0 * sqrt(sqrt(sqrt(((double)(count[i][j]) / (double)(ITER))))));
                     r[i][j] = 3 * c / 5; 
                     g[i][j] = 3 * c / 5; 
                     b[i][j] = c;
-                }*/
+                }
             }
         }
     }
@@ -100,7 +95,7 @@ int main()
     output_unit = fopen(output_filename, "wt");
     fprintf(output_unit, "P3\n");
     fprintf(output_unit, "%d  %d\n", N, M);
-    fprintf(output_unit, "%d\n", 255 );
+    fprintf(output_unit, "%d\n", 255);
 
     for(i = 0; i < M; i++)
     {
