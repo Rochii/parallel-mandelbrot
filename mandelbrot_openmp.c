@@ -39,7 +39,6 @@ int main()
     double y1;
     double y2;
 
-
     printf("Starting mandelbrot execution!\n");
 
     wtime = omp_get_wtime ( );
