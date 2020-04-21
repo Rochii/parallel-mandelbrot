@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     }
 
     fprintf(stderr, "\n Time = %g seconds.\n", omp_get_wtime() - wtime);
-    FILE * fp = fopen("mandelbrot_openmp.ppm","wb");
+    FILE * fp = fopen("files/mandelbrot_openmp.ppm","wb");
 
     fprintf(fp, "P6\n# CREATOR: Eric R. Weeks / mandel program\n");
     fprintf(fp, "%d %d\n255\n", W, H);
