@@ -1,116 +1,101 @@
+//
+//  mandelbrot.c
+//  
+//
+//  The Mandelbrot calculation is to iterate the equation
+//  z = z*z + c, where z and c are complex numbers, z is initially
+//  zero, and c is the coordinate of the point being tested. If
+//  the magnitude of z remains less than 2 for ever, then the point
+//  c is in the Mandelbrot set. In this code We write out the number of iterations
+//  before the magnitude of z exceeds 2, or UCHAR_MAX, whichever is
+//  smaller.//
+//
+//
 
-/* Includes*/
-# include <stdlib.h>
-# include <stdio.h>
-# include <math.h>
-# include <time.h>
-# include <omp.h>
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdio.h>
+#include <omp.h>
 
-/* Functions */
-int i4_min(int i1, int i2);
+// Function to print the color to the output (redirected to ppm terminal)
+void color(int red, int green, int blue)
+{
+    fputc((char)red, stdout);
+    fputc((char)green, stdout);
+    fputc((char)blue, stdout);
+}
 
-/* Defines */
-#define M 500
-#define N 500
-#define ITER 2000
+// Main program
+int main(int argc, char *argv[])
+{
+    int w = 600, h = 400, x, y;
+    /*  each iteration, it calculates: newz = oldz*oldz + p, where p 
+        is the current pixel, and oldz stars at the origin
+    */
 
-/* Main program */
-int main()
-{    
-    int r[M][N];
-    int g[M][N];
-    int b[M][N];   
-    int count[M][N];  
-    int c, i, j, jhi, jlo, k;
+    /* real and imaginary part of the pixel p */
+    double pr, pi;
 
-    char *output_filename = "mandelbrot_openmp.ppm";
-    FILE *output_unit;
+    /* real and imaginary parts of new and old z */
+    double newRe, newIm, oldRe, oldIm;
 
-    double wtime;
+    /* you can change these to zoom and change position */ 
+    double zoom = 1, moveX = -0.5, moveY = 0; 
 
-    double x_max =   1.25;
-    double x_min = - 2.25;
-    double x;
-    double x1;
-    double x2;
-    double y_max =   1.75;
-    double y_min = - 1.75;
-    double y;
-    double y1;
-    double y2;
+    /* after how much iterations the function should stop */
+    int maxIterations = 100000;    
+    
+    printf("P6\n# CREATOR: Eric R. Weeks / mandel program\n");
+    printf("%d %d\n255\n", w, h);
 
-    printf("Starting mandelbrot execution!\n");
-
-    wtime = omp_get_wtime ( );
-
-    /* Carry out the iteration for each pixel, determining COUNT */
-    # pragma omp parallel shared (b, count, g, r, x_max, x_min, y_max, y_min) private (i, j, k, x, x1, x2, y, y1, y2)
+    double wtime = omp_get_wtime();
+    
+    # pragma omp parallel shared (w, h, maxIterations, zoom, moveX, moveY) private (y, x, pr, pi, newRe, newIm, oldRe, oldIm)
     {
         # pragma omp for
-        for(i = 0; i < M; i++)
-        {
-            y = ((double)(i-1)*y_max + (double)(M-i)*y_min) / (double)(M-1);
-
-            for(j = 0; j < N; j++)
+        /* loop through every pixel */
+        for(y = 0; y < h; y++)
+        {        
+            for(x = 0; x < w; x++)
             {
-                x = ((double)(j-1)*x_max + (double)(N-j)*x_min) / (double)(N-1);
-                count[i][j] = 0;
+                /*  calculate the initial real and imaginary part of z, based on the pixel location and zoom and position values */
+                pr = 1.5 * (x - w / 2) / (0.5 * zoom * w) + moveX;
+                pi = (y - h / 2) / (0.5 * zoom * h) + moveY;
+                newRe = newIm = oldRe = oldIm = 0; //these should start at 0,0
 
-                x1 = x;
-                y1 = y;
+                /* "i" will represent the number of iterations */
+                int i;
 
-                for(k = 1; k <= ITER; k++)
+                /* start the iteration process */
+                for(i = 0; i < maxIterations; i++)
                 {
-                    x2 = x1*x1 - y1*y1 + x;
-                    y2 = 2*x1*y1 + y;
+                    /* remember value of previous iteration */
+                    oldRe = newRe;
+                    oldIm = newIm;
 
-                    if(x2 < -2.0 || 2.0 < x2 || y2 < -2.0 || 2.0 < y2)
-                    {
-                        count[i][j] = k;
-                        break;
-                    }
-                    x1 = x2;
-                    y1 = y2;
+                    /* the actual iteration, the real and imaginary part are calculated */
+                    newRe = oldRe * oldRe - oldIm * oldIm + pr;
+                    newIm = 2 * oldRe * oldIm + pi;
+                    
+                    /* if the point is outside the circle with radius 2: stop */
+                    if((newRe * newRe + newIm * newIm) > 4) break;
                 }
-
-                if(k >= ITER){
-                    r[i][j] = 0; g[i][j] = 0; b[i][j] = 0;
-                }
+                
+                if(i == maxIterations)
+                    color(0, 0, 0); // black
                 else
                 {
-                    c = (int)(255.0 * sqrt(sqrt(sqrt(((double)(count[i][j]) / (double)(ITER))))));
-                    r[i][j] = 3 * c / 5; 
-                    g[i][j] = 3 * c / 5; 
-                    b[i][j] = c;
+                    double z = sqrt(newRe * newRe + newIm * newIm);
+                    int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)maxIterations);
+                    color(brightness, brightness, 255);
                 }
+                
             }
         }
     }
 
-    wtime = omp_get_wtime() - wtime;
-    printf("\n  Time = %g seconds.\n", wtime);
-    
-    /* Write data to an ASCII PPM file. */
-    output_unit = fopen(output_filename, "wt");
-    fprintf(output_unit, "P3\n");
-    fprintf(output_unit, "%d  %d\n", N, M);
-    fprintf(output_unit, "%d\n", 255);
-
-    for(i = 0; i < M; i++)
-    {
-        for(jlo = 0; jlo < N; jlo = jlo + 4)
-        {
-            jhi = jlo+4 < N ? jlo+4 : N;
-
-            for(j = jlo; j < jhi; j++){
-                fprintf(output_unit, "  %d  %d  %d", r[i][j], g[i][j], b[i][j]);
-            }
-            fprintf(output_unit, "\n");
-        }
-    }
-    /* Close file descriptor */
-    fclose(output_unit);
-    printf("\n  Graphics data written to \"%s\".\n", output_filename);
+    fprintf(stderr, "Elapsed time: %.2lf seconds.\n", omp_get_wtime() - wtime);
 
     return 0;
 }
