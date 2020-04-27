@@ -25,4 +25,4 @@
 #$ -v  OMP_NUM_THREADS=16
 
 ## In this line you have to write the command that will execute your application.
-./mandelbrot_openmp
+./mandelbrot_openmp 600 400 10000 
