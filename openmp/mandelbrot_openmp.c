@@ -1,5 +1,5 @@
 //
-//  mandelbrot.c
+//  mandelbrot_openmp.c
 //  
 //
 //  The Mandelbrot calculation is to iterate the equation
@@ -12,6 +12,7 @@
 //
 //
 
+// Includes
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
@@ -26,10 +27,6 @@ void color(int red, int green, int blue)
     fputc((char)blue, stdout);
 }
 
-#define W          600      /* image width */
-#define H          400      /* image height */
-#define MAXITER    100000   /* after how much iterations the function should stop */
-
 typedef unsigned char pixel_t[3]; // colors [R, G ,B]
 
 // Main program
@@ -40,6 +37,25 @@ int main(int argc, char *argv[])
     double newRe, newIm, oldRe, oldIm;              /* real and imaginary parts of new and old z */    
     double zoom = 1, moveX = -0.5, moveY = 0;       /* you can change these to zoom and change position */     
     double wtime = omp_get_wtime();                 /* get start time */
+
+    int W;          /* image width */
+    int H;          /* image height */
+    int MAXITER;    /* after how much iterations the function should stop */
+    
+    // Argument parsing
+    if(argc == 4)
+    {
+        W = atoi(argv[1]);
+        H = atoi(argv[2]);
+        MAXITER = atoi(argv[3]);
+    }
+    else{
+        printf(" Invalid parameters. Usage: mandelbrot_openmp <WIDTH> <HEIGHT> <ITERATIONS>\n");
+        exit(0);
+    }
+
+    printf("Executing mandelbrot with widht: %d, height: %d for %d iterations.\n", W, H, MAXITER);
+
     pixel_t *pixels = malloc(sizeof(pixel_t)*H*W);  /* reserve memory to allocate colour pixels */
 
     #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, y, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
