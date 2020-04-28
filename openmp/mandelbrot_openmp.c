@@ -109,8 +109,9 @@ int main(int argc, char *argv[])
     fprintf(fp, "P6\n# CREATOR: Eric R. Weeks / mandel program\n");
     fprintf(fp, "%d %d\n255\n", W, H);
 
-    for(int y_act = 0; y_act < H; y_act++){                
-        for(int x_act = 0; x_act < W; x_act++){
+    int y_act, x_act;
+    for(y_act = 0; y_act < H; y_act++){                
+        for(x_act = 0; x_act < W; x_act++){
             fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
         }
     }
