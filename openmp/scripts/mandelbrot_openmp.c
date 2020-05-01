@@ -19,14 +19,6 @@
 #include <stdio.h>
 #include <omp.h>
 
-// Function to print the color to the output (redirected to ppm terminal)
-void color(int red, int green, int blue)
-{
-    fputc((char)red, stdout);
-    fputc((char)green, stdout);
-    fputc((char)blue, stdout);
-}
-
 typedef unsigned char pixel_t[3]; // colors [R, G ,B]
 
 // Main program
@@ -104,7 +96,7 @@ int main(int argc, char *argv[])
     }
 
     fprintf(stderr, "\n Time = %g seconds.\n", omp_get_wtime() - wtime);
-    FILE * fp = fopen("files/mandelbrot_openmp.ppm","wb");
+    FILE * fp = fopen("../files/mandelbrot_openmp.ppm","wb");
 
     fprintf(fp, "P6\n# CREATOR: Eric R. Weeks / mandel program\n");
     fprintf(fp, "%d %d\n255\n", W, H);
