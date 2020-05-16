@@ -49,34 +49,31 @@ int main(int argc, char *argv[])
     if(rank == 0) 
     {
         // Master        
+        /*
         FILE * fp = fopen("../files/mandelbrot_openmp.ppm", "wb");
         fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
         fprintf(fp, "%d %d\n255\n", W, H);
-
-        int i, number;
-        for(i = 1; i < size-1; i++)
+        */
+        int proc, number;
+        for(proc = 1; proc < size-1; proc++)
         {
-            MPI_Recv(&number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
-            printf("Received from process %d\n", number);    
+            MPI_Recv(&number, 1, MPI_INT, proc, 1, MPI_COMM_WORLD, &status);
+            printf("Received from process %d\n", number);
         }
  
     }
     else
     {   
-        // Worker
-        int begin = ((rank-1) * n) / H;
-        int end = ((rank*n - 1)) / H;
+        // Worker: Row granularity
+        int begin = ((rank-1) * n) / W;
+        int end = (rank*n - 1) / W;
 
         printf("Process[%d] to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
 
-        pixel_t *pixels = malloc(sizeof(pixel_t)*(end-begin)*W);  /* Reserve memory to allocate colour pixels */
-        
-        MPI_Send(&rank, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+        pixel_t *pixels = malloc(sizeof(pixel_t)*H*W + 1);  /* Reserve memory to allocate colour pixels */
 
-        return 1;
-
-        for(y = 0; y < H; y++)
-        {        
+        for(y = begin; y < end; y++)
+        {
             for(x = 0; x < W; x++)
             {
                 /* Calculate the initial real and imaginary part of z, based on the pixel location and zoom and position values */
@@ -84,9 +81,8 @@ int main(int argc, char *argv[])
                 pi = (y - H/2) / (0.5*zoom*H) + moveY;
                 newRe = newIm = oldRe = oldIm = 0;
                 
-                int i;
-
                 /* Start the iteration process */
+                int i;
                 for(i = 0; i < MAXITER; i++)
                 {
                     /* Remember value of previous iteration */
@@ -109,16 +105,31 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    double z = sqrt(newRe * newRe + newIm * newIm);
+                    double z = sqrt(newRe * n* newIm);
                     int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)MAXITER);
                     pixels[y*W + x][0] = brightness;
                     pixels[y*W + x][1] = brightness;
-                    pixels[y*W + x][2] = 255;
+                    pixels[y*W + x][2] = 255;                
                 }              
             }
         }
 
         // Write pixels in a file
+        printf("Writing pixels in file");
+
+        char filename[50];
+        sprintf(filename, "../files/mandelbrot_openmp_%d.ppm", rank);
+        FILE *fp = fopen(filename, "wb");
+
+        fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
+        fprintf(fp, "%d %d\n255\n", W, (end-begin));
+
+        int y_act, x_act;
+        for(y_act = begin; y_act < end; y_act++){                
+            for(x_act = 0; x_act < W; x_act++){
+                fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
+            }
+        }
 
         MPI_Send(&rank, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
     }

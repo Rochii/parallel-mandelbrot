@@ -10,7 +10,7 @@
 #$ -cwd
 
 ## Parallel programming environment (mpich) to instantiate and number of computing slots.
-#$ -pe mpich 4
+#$ -pe mpich 3
 
 ## The  name  of  the  job.
 #$ -N rtv3
@@ -21,15 +21,12 @@
 #$ -o output
 #$ -e error
 
-## The email to send the queue manager notifications. 
-##$ -M hello!
-
 MPICH_MACHINES=$TMPDIR/mpich_machines
 cat $PE_HOSTFILE | awk '{print $1":"$2}' > $MPICH_MACHINES
 
 
 ## In this line you have to write the command that will execute your application.
-mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_mp 600 400 10000
+mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_mp 600 400 100000
 
 
 rm -rf $MPICH_MACHINES
