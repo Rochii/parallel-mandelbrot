@@ -78,8 +78,6 @@ int main(int argc, char *argv[])
 
         pixel_t *pixels = malloc(sizeof(pixel_t)*H*W + 1);  /* Reserve memory to allocate colour pixels */
 
-        #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, y, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
-        /* Parallel region */
         for(y = begin; y < end; y++)
         {
             for(x = 0; x < W; x++)

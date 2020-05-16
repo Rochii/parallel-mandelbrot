@@ -1,20 +1,20 @@
--catch_rsh /opt/gridengine/default/spool/compute-0-4/active_jobs/12027.1/pe_hostfile
-compute-0-4
-compute-0-4
-compute-0-4
-compute-0-4
+-catch_rsh /opt/gridengine/default/spool/compute-0-1/active_jobs/12028.1/pe_hostfile
+compute-0-1
+compute-0-1
+compute-0-1
+compute-0-1
+compute-0-3
+compute-0-3
+compute-0-3
+compute-0-3
 compute-0-5
 compute-0-5
 compute-0-5
 compute-0-5
-compute-0-6
-compute-0-6
-compute-0-6
-compute-0-6
-compute-0-0
-compute-0-0
-compute-0-0
-compute-0-0
+compute-0-4
+compute-0-4
+compute-0-4
+compute-0-4
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
@@ -32,44 +32,59 @@ Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Total number of pixels: 1600000
-Process[5] to complete 267 rows with begin: 1066 and end: 1333
-Total number of pixels: 1600000
-Total number of pixels: 1600000
-Process[7] to complete 266 rows with begin: 1600 and end: 1866
-Total number of pixels: 1600000
-Process[1] to complete 266 rows with begin: 0 and end: 266
-Total number of pixels: 1600000
-Process[4] to complete 266 rows with begin: 800 and end: 1066
-Total number of pixels: 1600000
-Process[2] to complete 267 rows with begin: 266 and end: 533
-Total number of pixels: 1600000
-Process[6] to complete 266 rows with begin: 1333 and end: 1599
-Total number of pixels: 1600000
-Process[3] to complete 266 rows with begin: 533 and end: 799
-Total number of pixels: 1600000
-Process[12] to complete 266 rows with begin: 2933 and end: 3199
 Total number of pixels: 1600000
 Process[8] to complete 267 rows with begin: 1866 and end: 2133
 Total number of pixels: 1600000
-Process[13] to complete 266 rows with begin: 3200 and end: 3466
+Process[1] to complete 266 rows with begin: 0 and end: 266
 Total number of pixels: 1600000
 Process[9] to complete 266 rows with begin: 2133 and end: 2399
 Total number of pixels: 1600000
-Process[14] to complete 267 rows with begin: 3466 and end: 3733
+Process[2] to complete 267 rows with begin: 266 and end: 533
 Total number of pixels: 1600000
 Process[10] to complete 266 rows with begin: 2400 and end: 2666
 Total number of pixels: 1600000
-Process[15] to complete 266 rows with begin: 3733 and end: 3999
+Process[3] to complete 266 rows with begin: 533 and end: 799
 Total number of pixels: 1600000
 Process[11] to complete 267 rows with begin: 2666 and end: 2933
-Writing pixels in fileWriting pixels in fileReceived from process 1
-Writing pixels in fileWriting pixels in fileReceived from process 2
-Writing pixels in fileReceived from process 3
-Writing pixels in fileWriting pixels in fileReceived from process 4
-Writing pixels in fileWriting pixels in fileReceived from process 5
-Writing pixels in fileWriting pixels in fileReceived from process 6
-Writing pixels in fileWriting pixels in fileWriting pixels in fileReceived from process 7
-Writing pixels in fileReceived from process 8
+Total number of pixels: 1600000
+Process[4] to complete 266 rows with begin: 800 and end: 1066
+Total number of pixels: 1600000
+Process[5] to complete 267 rows with begin: 1066 and end: 1333
+Total number of pixels: 1600000
+Process[6] to complete 266 rows with begin: 1333 and end: 1599
+Total number of pixels: 1600000
+Process[7] to complete 266 rows with begin: 1600 and end: 1866
+Total number of pixels: 1600000
+Process[12] to complete 266 rows with begin: 2933 and end: 3199
+Total number of pixels: 1600000
+Process[13] to complete 266 rows with begin: 3200 and end: 3466
+Total number of pixels: 1600000
+Process[14] to complete 267 rows with begin: 3466 and end: 3733
+Total number of pixels: 1600000
+Process[15] to complete 266 rows with begin: 3733 and end: 3999
+Writing pixels in file
+Writing pixels in file
+Received from process 1
+Writing pixels in file
+Writing pixels in file
+Received from process 2
+Writing pixels in file
+Received from process 3
+Writing pixels in file
+Writing pixels in file
+Received from process 4
+Writing pixels in file
+Writing pixels in file
+Received from process 5
+Writing pixels in file
+Writing pixels in file
+Writing pixels in file
+Received from process 6
+Writing pixels in file
+Received from process 7
+Writing pixels in file
+Writing pixels in file
+Received from process 8
 Received from process 9
 Received from process 10
 Received from process 11
@@ -78,19 +93,19 @@ Received from process 13
 Received from process 14
 Received from process 15
 Command: convert ../files/mandelbrot_mpi_1.ppm ../files/mandelbrot_mpi_2.ppm ../files/mandelbrot_mpi_3.ppm ../files/mandelbrot_mpi_4.ppm ../files/mandelbrot_mpi_5.ppm ../files/mandelbrot_mpi_6.ppm ../files/mandelbrot_mpi_7.ppm ../files/mandelbrot_mpi_8.ppm ../files/mandelbrot_mpi_9.ppm ../files/mandelbrot_mpi_10.ppm ../files/mandelbrot_mpi_11.ppm ../files/mandelbrot_mpi_12.ppm ../files/mandelbrot_mpi_13.ppm ../files/mandelbrot_mpi_14.ppm ../files/mandelbrot_mpi_15.ppm -append ../files/mandelbrot_mpi.png
-Task: 1 - Time (Wtime): 0.627810 - Time (clock): 75.500000
-Task: 3 - Time (Wtime): 10.187622 - Time (clock): 75.580000
-Task: 13 - Time (Wtime): 10.292845 - Time (clock): 75.520000
-Task: 9 - Time (Wtime): 64.236350 - Time (clock): 75.590000
-Task: 5 - Time (Wtime): 41.001637 - Time (clock): 75.590000
-Task: 0 - Time (Wtime): 75.647667 - Time (clock): 69.590000
-Task: 12 - Time (Wtime): 33.010805 - Time (clock): 75.570000
-Task: 11 - Time (Wtime): 41.116852 - Time (clock): 75.580000
-Task: 4 - Time (Wtime): 32.911386 - Time (clock): 75.550000
-Task: 2 - Time (Wtime): 6.623409 - Time (clock): 75.090000
-Task: 14 - Time (Wtime): 6.399096 - Time (clock): 75.370000
-Task: 10 - Time (Wtime): 50.288406 - Time (clock): 75.550000
-Task: 7 - Time (Wtime): 64.147367 - Time (clock): 75.580000
-Task: 15 - Time (Wtime): 0.575470 - Time (clock): 75.580000
-Task: 8 - Time (Wtime): 69.615414 - Time (clock): 75.590000
-Task: 6 - Time (Wtime): 50.155439 - Time (clock): 75.590000
+Task: 4 - Time (Wtime): 32.898504 - Time (clock): 75.830000
+Task: 1 - Time (Wtime): 0.632369 - Time (clock): 75.720000
+Task: 7 - Time (Wtime): 64.157220 - Time (clock): 75.800000
+Task: 12 - Time (Wtime): 32.986299 - Time (clock): 75.790000
+Task: 9 - Time (Wtime): 64.244592 - Time (clock): 75.770000
+Task: 3 - Time (Wtime): 10.148383 - Time (clock): 75.810000
+Task: 5 - Time (Wtime): 40.980788 - Time (clock): 75.800000
+Task: 13 - Time (Wtime): 10.269567 - Time (clock): 75.790000
+Task: 10 - Time (Wtime): 50.250697 - Time (clock): 75.820000
+Task: 2 - Time (Wtime): 6.374697 - Time (clock): 75.540000
+Task: 6 - Time (Wtime): 50.168065 - Time (clock): 75.800000
+Task: 14 - Time (Wtime): 6.620365 - Time (clock): 75.360000
+Task: 11 - Time (Wtime): 41.102517 - Time (clock): 75.780000
+Task: 0 - Time (Wtime): 75.876045 - Time (clock): 69.620000
+Task: 15 - Time (Wtime): 0.564214 - Time (clock): 75.790000
+Task: 8 - Time (Wtime): 69.618463 - Time (clock): 75.830000
