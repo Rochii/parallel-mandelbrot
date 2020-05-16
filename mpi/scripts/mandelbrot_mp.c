@@ -3,114 +3,130 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 #include "mpi.h"
 
-#define SIZE 800
-
-// Function definitions
-int mandel(complex z0);
+typedef unsigned char pixel_t[3]; // colors [R, G ,B]
 
 // Main program
 int main(int argc, char *argv[])
 {
-    double xmin, xmax, ymin, ymax;
-    int i, j, rows, columns;
-    complex z;
-    int row[SIZE];
-    unsigned char line[3 * SIZE];
-    FILE *img;
-    char file[80];
+    int x, y;                                       /* Each iteration, it calculates: newz = oldz*oldz + p, where p is the current pixel, and oldz stars at the origin */
+    int rank, namelen, size, num;                   /* MPI world variables */
+    int W, H, MAXITER;                              /* Image width, height and number of mandel iterations */
+    double pr, pi;                                  /* Real and imaginary part of the pixel p */    
+    double newRe, newIm, oldRe, oldIm;              /* Real and imaginary parts of new and old z */    
+    double zoom = 1, moveX = -0.5, moveY = 0;       /* You can change these to zoom and change position */
+    double tic, toc, time_s, time_e;                /* MPI time variables */
+    char host[50];                                  /* Host buffer */
+    MPI_Status status;                              /* MPI status variable */
 
-    // MPI variables initilizations
-    int rank, namelen, size, num;
-    long acc = 0;
-    double result, tic, toc, time_s, time_e;
-    char host[50], cont;
-    MPI_Status status;  
+    // Argument parsing
+    if(argc == 4)
+    {
+        W = atoi(argv[1]);
+        H = atoi(argv[2]);
+        MAXITER = atoi(argv[3]);
+    }
+    else{
+        printf(" Invalid parameters. Usage: mandelbrot_openmp <WIDTH> <HEIGHT> <ITERATIONS>\n");
+        exit(0);
+    }
+
+    printf("Executing mandelbrot with widht: %d, height: %d for %d iterations.\n", W, H, MAXITER);
 
     // MPI initilizations
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-    MPI_Get_processor_name(host,&namelen);
-    time_s = MPI_Wtime();
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);           /* Get the rank of the process */
+    MPI_Comm_size(MPI_COMM_WORLD, &size);           /* Get all the processes */
+    MPI_Get_processor_name(host, &namelen);         /* Get the host */
+    time_s = MPI_Wtime();                           
     tic = clock();
-
-    int n = (SIZE * SIZE) / (size - 1);
-    xmin = -2; xmax = 1;
-    ymin = -1.5; ymax = 1.5;
   
-    if(rank == 0) // Master
+    int n = (H * W) / (size-1);                    /* Total number of pixels to divide */
+
+    printf("Total number of pixels: %d\n", n);
+    if(rank == 0) 
     {
-        snprintf(file, sizeof file, "%s%s", "mandel", ".pam");
-        img = fopen(file,"w");
-        fprintf(img, "P6\n%d %d 255\n", SIZE, SIZE);
-        for(i = 1; i <= size - 1; i++) 
+        // Master        
+        FILE * fp = fopen("../files/mandelbrot_openmp.ppm", "wb");
+        fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
+        fprintf(fp, "%d %d\n255\n", W, H);
+
+        int number;
+        for(int i = 1; i < size-1; i++)
         {
-            int begin = ((i - 1) * n) / SIZE;
-            int end = ((i * n - 1)) / SIZE;
-            for(j = begin; j <= end; j++)
-            {
-                MPI_Recv(&line, 3 * SIZE, MPI_UNSIGNED_CHAR, i, 1, MPI_COMM_WORLD, &status);
-                fwrite(line, 1, sizeof line, img);	
-            }
+            MPI_Recv(&number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
+            printf("Received from process %d\n", number);    
         }
+ 
     }
     else
-    {   // Worker 	
-        int begin = ((rank - 1) * n) / SIZE;
-        int end = ((rank * n - 1)) / SIZE;
+    {   
+        // Worker
+        int begin = ((rank-1) * n) / H;
+        int end = ((rank*n - 1)) / H;
 
-        for(i = begin; i <= end; i++)
-        {
-            for(j = 0; j < SIZE; j++)
-            {
-                z = xmin + j*((xmax-xmin)/SIZE) + (ymax - i*((ymax-ymin)/SIZE))*I;
-                row[j] = mandel(z);
-            }
+        printf("Process[%d] to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
 
-            for(j = 0; j < SIZE; j++)
+        pixel_t *pixels = malloc(sizeof(pixel_t)*(end-begin)*W);  /* Reserve memory to allocate colour pixels */
+        
+        MPI_Send(&rank, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+
+        return 1;
+
+        for(y = 0; y < H; y++)
+        {        
+            for(x = 0; x < W; x++)
             {
-                if(row[j] <= 63)
+                /* Calculate the initial real and imaginary part of z, based on the pixel location and zoom and position values */
+                pr = 1.5 * (x - W/2) / (0.5*zoom*W) + moveX;
+                pi = (y - H/2) / (0.5*zoom*H) + moveY;
+                newRe = newIm = oldRe = oldIm = 0;
+                
+                int i;
+
+                /* Start the iteration process */
+                for(i = 0; i < MAXITER; i++)
                 {
-                    line[3*j] = 255;
-                    line[3*j+1] = line[3*j + 2] = 255 - 4*row[j];
+                    /* Remember value of previous iteration */
+                    oldRe = newRe;
+                    oldIm = newIm;
+
+                    /* The actual iteration, the real and imaginary part are calculated */
+                    newRe = oldRe * oldRe - oldIm * oldIm + pr;
+                    newIm = 2 * oldRe * oldIm + pi;
+                    
+                    /* If the point is outside the circle with radius 2: stop */
+                    if((newRe * newRe + newIm * newIm) > 4) break;
+                }
+                
+                if(i == MAXITER)
+                {
+                    pixels[y*W + x][0] = 0;
+                    pixels[y*W + x][1] = 0;
+                    pixels[y*W + x][2] = 0;
                 }
                 else
                 {
-                    line[3*j] = 255;
-                    line[3*j + 1] = row[j] - 63;
-                    line[3*j + 2] = 0;
-                }
-
-                if(row[j] == 320) line[3*j] = line[3*j + 1] = line[3*j + 2] = 255;
+                    double z = sqrt(newRe * newRe + newIm * newIm);
+                    int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)MAXITER);
+                    pixels[y*W + x][0] = brightness;
+                    pixels[y*W + x][1] = brightness;
+                    pixels[y*W + x][2] = 255;
+                }              
             }
-            MPI_Send(&line, 3 * SIZE, MPI_UNSIGNED_CHAR, 0, 1, MPI_COMM_WORLD);
         }
+
+        // Write pixels in a file
+
+        MPI_Send(&rank, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
     }
 
     time_e = MPI_Wtime();
     MPI_Finalize();
     toc = clock();
-    printf("Task: %d - Time (Wtime): %ld - Time (clock): %ld\n", rank, (time_e-time_s), (double)((toc-tic) / CLOCKS_PER_SEC));
+    printf("Task: %d - Time (Wtime): %f - Time (clock): %f\n", rank, (time_e-time_s), (double)((toc-tic) / CLOCKS_PER_SEC));
 
     return 0;
-}
-
-
-int mandel(complex z0)
-{
-    int i;
-    complex z;
-
-    z = z0;
-    for(i = 1; i < 320; i++)
-    {
-        z = z*z + z0;
-        if((creal(z)*creal(z)) + (cimag(z)*cimag(z)) > 4.0){
-            break;
-        }
-    }
-    
-    return i;
 }
