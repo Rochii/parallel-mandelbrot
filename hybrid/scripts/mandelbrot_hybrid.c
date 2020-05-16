@@ -58,12 +58,14 @@ int main(int argc, char *argv[])
         {
             MPI_Recv(&number, 1, MPI_INT, proc, 1, MPI_COMM_WORLD, &status);
             //printf("Received from process %d\n", number);
-            sprintf(filename, "../files/mandelbrot_openmp_%d.ppm ", number);
+            sprintf(filename, "../files/mandelbrot_hybrid_%d.ppm ", number);
             strcat(command, filename);
             memset(filename, 0, sizeof(filename));
         }
-        strcat(command, "-append ../files/mandelbrot_openmp.png");
+        strcat(command, "-append ../files/mandelbrot_hybrid.png");
         //printf("Command: %s\n", command);
+
+        // TODO: Mirar si hi ha alguna opció per agafar el predicat ../files/mandelbrot_hybrid_*.png amb ordre numèric
 
         FILE *fp = popen(command, "w");
         fclose(fp);
@@ -83,6 +85,8 @@ int main(int argc, char *argv[])
 
         pixel_t *pixels = malloc(sizeof(pixel_t)*H*W + 1);  /* Reserve memory to allocate colour pixels */
 
+        #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, y, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
+        /* loop through every pixel */
         for(y = begin; y < end; y++)
         {
             for(x = 0; x < W; x++)
@@ -129,7 +133,7 @@ int main(int argc, char *argv[])
         char filename[50];
         int y_act, x_act;
 
-        sprintf(filename, "../files/mandelbrot_openmp_%d.ppm", rank);
+        sprintf(filename, "../files/mandelbrot_hybrid_%d.ppm", rank);
         FILE *fp = fopen(filename, "wb");
         fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
         fprintf(fp, "%d %d\n255\n", W, (end-begin));

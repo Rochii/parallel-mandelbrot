@@ -1,4 +1,8 @@
--catch_rsh /opt/gridengine/default/spool/compute-0-0/active_jobs/12026.1/pe_hostfile
+-catch_rsh /opt/gridengine/default/spool/compute-0-6/active_jobs/12029.1/pe_hostfile
+compute-0-6
+compute-0-6
+compute-0-6
+compute-0-6
 compute-0-0
 compute-0-0
 compute-0-0
@@ -7,10 +11,6 @@ compute-0-1
 compute-0-1
 compute-0-1
 compute-0-1
-compute-0-6
-compute-0-6
-compute-0-6
-compute-0-6
 compute-0-3
 compute-0-3
 compute-0-3
@@ -31,19 +31,19 @@ Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
 Executing mandelbrot with widht: 6000, height: 4000 for 10000 iterations.
-Process[4] to complete 266 rows with begin: 800 and end: 1066
-Process[1] to complete 266 rows with begin: 0 and end: 266
-Process[5] to complete 267 rows with begin: 1066 and end: 1333
-Process[2] to complete 267 rows with begin: 266 and end: 533
-Process[6] to complete 266 rows with begin: 1333 and end: 1599
 Process[3] to complete 266 rows with begin: 533 and end: 799
-Process[7] to complete 266 rows with begin: 1600 and end: 1866
+Process[1] to complete 266 rows with begin: 0 and end: 266
+Process[2] to complete 267 rows with begin: 266 and end: 533
 Process[8] to complete 267 rows with begin: 1866 and end: 2133
-Process[9] to complete 266 rows with begin: 2133 and end: 2399
-Process[10] to complete 266 rows with begin: 2400 and end: 2666
-Process[11] to complete 267 rows with begin: 2666 and end: 2933
 Process[12] to complete 266 rows with begin: 2933 and end: 3199
+Process[9] to complete 266 rows with begin: 2133 and end: 2399
 Process[13] to complete 266 rows with begin: 3200 and end: 3466
+Process[10] to complete 266 rows with begin: 2400 and end: 2666
 Process[14] to complete 267 rows with begin: 3466 and end: 3733
+Process[11] to complete 267 rows with begin: 2666 and end: 2933
 Process[15] to complete 266 rows with begin: 3733 and end: 3999
-Task: 0 - Time (Wtime): 75.638390 - Time (clock): 69.590000
+Process[4] to complete 266 rows with begin: 800 and end: 1066
+Process[5] to complete 267 rows with begin: 1066 and end: 1333
+Process[6] to complete 266 rows with begin: 1333 and end: 1599
+Process[7] to complete 266 rows with begin: 1600 and end: 1866
+Task: 0 - Time (Wtime): 65.543309 - Time (clock): 56.430000
