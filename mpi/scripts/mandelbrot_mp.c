@@ -65,7 +65,8 @@ int main(int argc, char *argv[])
         strcat(command, "-append ../files/mandelbrot_openmp.png");
         printf("Command: %s\n", command);
 
-        // TODO: Execute command: convert mandelbrot_openmp_1.ppm ... mandelbrot_openmp_3.ppm -append mandelbrot.png
+        FILE *fp = popen(command, "w");
+        fclose(fp);
     }
     else
     {   
@@ -135,6 +136,8 @@ int main(int argc, char *argv[])
                 fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
             }
         }
+        
+        fclose(fp);
 
         MPI_Send(&rank, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
     }
