@@ -1,18 +1,96 @@
--catch_rsh /opt/gridengine/default/spool/compute-0-6/active_jobs/12018.1/pe_hostfile
-compute-0-6
-compute-0-6
-compute-0-6
+-catch_rsh /opt/gridengine/default/spool/compute-0-1/active_jobs/12020.1/pe_hostfile
+compute-0-1
+compute-0-1
+compute-0-1
+compute-0-1
+compute-0-4
+compute-0-4
+compute-0-4
+compute-0-4
+compute-0-3
+compute-0-3
+compute-0-3
+compute-0-3
+compute-0-0
+compute-0-0
+compute-0-0
+compute-0-0
 Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
 Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
 Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
-Total number of pixels: 120000
-Total number of pixels: 120000
-Process[1] to complete 199 rows with begin: 0 and end: 199
-Total number of pixels: 120000
-Process[2] to complete 199 rows with begin: 200 and end: 399
-Writing pixels in fileWriting pixels in fileReceived from process 1
-Received from process 2
-Command: convert ../files/mandelbrot_openmp_1.ppm ../files/mandelbrot_openmp_2.ppm -append ../files/mandelbrot_openmp.png
-Task: 0 - Time (Wtime): 0.866227 - Time (clock): 0.260000
-Task: 1 - Time (Wtime): 0.260530 - Time (clock): 0.850000
-Task: 2 - Time (Wtime): 0.268151 - Time (clock): 0.850000
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 1000 iterations.
+Total number of pixels: 16000
+Process[12] to complete 26 rows with begin: 293 and end: 319
+Total number of pixels: 16000
+Process[9] to complete 26 rows with begin: 213 and end: 239
+Total number of pixels: 16000
+Process[13] to complete 26 rows with begin: 320 and end: 346
+Total number of pixels: 16000
+Process[11] to complete 27 rows with begin: 266 and end: 293
+Total number of pixels: 16000
+Process[14] to complete 27 rows with begin: 346 and end: 373
+Total number of pixels: 16000
+Process[15] to complete 26 rows with begin: 373 and end: 399
+Writing pixels in fileTotal number of pixels: 16000
+Total number of pixels: 16000
+Process[1] to complete 26 rows with begin: 0 and end: 26
+Writing pixels in fileTotal number of pixels: 16000
+Process[2] to complete 27 rows with begin: 26 and end: 53
+Total number of pixels: 16000
+Process[3] to complete 26 rows with begin: 53 and end: 79
+Total number of pixels: 16000
+Process[4] to complete 26 rows with begin: 80 and end: 106
+Total number of pixels: 16000
+Process[8] to complete 27 rows with begin: 186 and end: 213
+Total number of pixels: 16000
+Process[5] to complete 27 rows with begin: 106 and end: 133
+Total number of pixels: 16000
+Process[10] to complete 26 rows with begin: 240 and end: 266
+Total number of pixels: 16000
+Process[6] to complete 26 rows with begin: 133 and end: 159
+Total number of pixels: 16000
+Process[7] to complete 26 rows with begin: 160 and end: 186
+Received from process 1
+Writing pixels in fileWriting pixels in fileReceived from process 2
+Writing pixels in fileWriting pixels in fileReceived from process 3
+Writing pixels in fileWriting pixels in fileReceived from process 4
+Writing pixels in fileWriting pixels in fileReceived from process 5
+Writing pixels in fileWriting pixels in fileReceived from process 6
+Writing pixels in fileWriting pixels in fileWriting pixels in fileReceived from process 7
+Received from process 8
+Received from process 9
+Received from process 10
+Received from process 11
+Received from process 12
+Received from process 13
+Received from process 14
+Received from process 15
+Command: convert ../files/mandelbrot_openmp_1.ppm ../files/mandelbrot_openmp_2.ppm ../files/mandelbrot_openmp_3.ppm ../files/mandelbrot_openmp_4.ppm ../files/mandelbrot_openmp_5.ppm ../files/mandelbrot_openmp_6.ppm ../files/mandelbrot_openmp_7.ppm ../files/mandelbrot_openmp_8.ppm ../files/mandelbrot_openmp_9.ppm ../files/mandelbrot_openmp_10.ppm ../files/mandelbrot_openmp_11.ppm ../files/mandelbrot_openmp_12.ppm ../files/mandelbrot_openmp_13.ppm ../files/mandelbrot_openmp_14.ppm ../files/mandelbrot_openmp_15.ppm -append ../files/mandelbrot_openmp.png
+Task: 4 - Time (Wtime): 0.062755 - Time (clock): 0.900000
+Task: 3 - Time (Wtime): 0.022698 - Time (clock): 0.900000
+Task: 6 - Time (Wtime): 0.084960 - Time (clock): 0.900000
+Task: 9 - Time (Wtime): 0.093988 - Time (clock): 0.900000
+Task: 2 - Time (Wtime): 0.017320 - Time (clock): 0.890000
+Task: 12 - Time (Wtime): 0.052267 - Time (clock): 0.900000
+Task: 5 - Time (Wtime): 0.074629 - Time (clock): 0.900000
+Task: 8 - Time (Wtime): 0.103290 - Time (clock): 0.890000
+Task: 14 - Time (Wtime): 0.017112 - Time (clock): 0.900000
+Task: 13 - Time (Wtime): 0.022788 - Time (clock): 0.900000
+Task: 10 - Time (Wtime): 0.077630 - Time (clock): 0.910000
+Task: 1 - Time (Wtime): 0.008668 - Time (clock): 0.890000
+Task: 11 - Time (Wtime): 0.069477 - Time (clock): 0.900000
+Task: 0 - Time (Wtime): 0.906665 - Time (clock): 0.100000
+Task: 15 - Time (Wtime): 0.008464 - Time (clock): 0.890000
+Task: 7 - Time (Wtime): 0.103348 - Time (clock): 0.900000

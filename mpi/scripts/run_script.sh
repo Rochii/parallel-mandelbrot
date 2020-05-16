@@ -10,7 +10,7 @@
 #$ -cwd
 
 ## Parallel programming environment (mpich) to instantiate and number of computing slots.
-#$ -pe mpich 3
+#$ -pe mpich 16
 
 ## The  name  of  the  job.
 #$ -N rtv3
