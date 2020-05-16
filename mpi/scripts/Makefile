@@ -5,4 +5,4 @@ run:
 	qsub run_script.sh
 
 clean: 
-	rm output error core.*
+	rm output error ../files/*

@@ -48,19 +48,24 @@ int main(int argc, char *argv[])
     printf("Total number of pixels: %d\n", n);
     if(rank == 0) 
     {
-        // Master        
-        /*
-        FILE * fp = fopen("../files/mandelbrot_openmp.ppm", "wb");
-        fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
-        fprintf(fp, "%d %d\n255\n", W, H);
-        */
+        // Master
         int proc, number;
-        for(proc = 1; proc < size-1; proc++)
+        char filename[50];
+        char command[size*50];
+
+        strcpy(command, "convert ");
+        for(proc = 1; proc < size; proc++)
         {
             MPI_Recv(&number, 1, MPI_INT, proc, 1, MPI_COMM_WORLD, &status);
             printf("Received from process %d\n", number);
+            sprintf(filename, "../files/mandelbrot_openmp_%d.ppm ", number);
+            strcat(command, filename);
+            memset(filename, 0, sizeof(filename));
         }
- 
+        strcat(command, "-append ../files/mandelbrot_openmp.png");
+        printf("Command: %s\n", command);
+
+        // TODO: Execute command: convert mandelbrot_openmp_1.ppm ... mandelbrot_openmp_3.ppm -append mandelbrot.png
     }
     else
     {   

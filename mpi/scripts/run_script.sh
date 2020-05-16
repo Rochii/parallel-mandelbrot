@@ -26,7 +26,7 @@ cat $PE_HOSTFILE | awk '{print $1":"$2}' > $MPICH_MACHINES
 
 
 ## In this line you have to write the command that will execute your application.
-mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_mp 600 400 100000
+mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_mp 600 400 1000
 
 
 rm -rf $MPICH_MACHINES
