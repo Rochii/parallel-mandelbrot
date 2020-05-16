@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
         fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
         fprintf(fp, "%d %d\n255\n", W, H);
 
-        int number;
-        for(int i = 1; i < size-1; i++)
+        int i, number;
+        for(i = 1; i < size-1; i++)
         {
             MPI_Recv(&number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
             printf("Received from process %d\n", number);    

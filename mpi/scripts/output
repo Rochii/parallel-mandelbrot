@@ -1,0 +1,16 @@
+-catch_rsh /opt/gridengine/default/spool/compute-0-0/active_jobs/11983.1/pe_hostfile
+compute-0-0
+compute-0-0
+compute-0-0
+compute-0-0
+Executing mandelbrot with widht: 600, height: 400 for 10000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 10000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 10000 iterations.
+Executing mandelbrot with widht: 600, height: 400 for 10000 iterations.
+Total number of pixels: 80000
+Total number of pixels: 80000
+Process[1] to complete 199 rows with begin: 0 and end: 199
+Total number of pixels: 80000
+Process[2] to complete 199 rows with begin: 200 and end: 399
+Total number of pixels: 80000
+Process[3] to complete 199 rows with begin: 400 and end: 599
