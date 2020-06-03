@@ -1,5 +1,5 @@
 all:
-	mpicc mandelbrot_hybrid.c -o mandelbrot_hybrid -fopenmp -lm
+	mpicc mandelbrot_hybrid_static.c -o mandelbrot_hybrid_static -fopenmp -lm
 
 run: 
 	qsub run_script.sh
