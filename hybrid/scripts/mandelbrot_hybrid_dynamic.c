@@ -56,24 +56,30 @@ int main(int argc, char *argv[])
         int n_chunks = 0;
         int total_chunks = H;
 
+        mySendArr[0] = n_chunks;
         // While we have chunks
         while(n_chunks < total_chunks)
         {
             // Receive worker requests
             MPI_Recv(myRecvArr, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+            printf(" MASTER => received request from worker[%d]\n", status.MPI_SOURCE);
 
             // Worker want more work
             if(myRecvArr[0] == -1)
             {
                 // Send chunk to the worker and increase the next chunk to send
                 MPI_Send(mySendArr, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+                printf(" MASTER => received work request from worker[%d]\n", status.MPI_SOURCE);
+
                 n_chunks++;
+                mySendArr[0] = n_chunks;
             }
             // Worker want to send finished work
             else if(myRecvArr[0] == -2)
             {
                 // Receive pixels from workers
                 MPI_Recv(myRecvArr, H*W + 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
+                printf(" MASTER => received request to get worker[%d] results\n", status.MPI_SOURCE);
                 
                 // TODO: Append data to somewhere
             }
@@ -87,25 +93,29 @@ int main(int argc, char *argv[])
     else // Worker
     {
         int i;
-        pixel_t *pixels = malloc(sizeof(pixel_t)*H*W + 1);  /* Reserve memory to allocate colour pixels */
 
         while(1)
         {
             // Ask master for work
             mySendArr[0] = -1;
             MPI_Send(mySendArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            printf(" Process[%d] => sending work request to master\n", rank);
 
             // Recv response (starting number or -1)
             MPI_Recv(myRecvArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+            printf(" Process[%d] => received master message\n", rank);
 
             // -1 means no more data to process, break the loop
             if(myRecvArr[0] == -1){
+                printf(" Process[%d] => breaking form the loop\n", rank);
                 break;
             }
             else
             {
-                y = myRecvArr[0];                
-                printf("Process[%d] to complete chunk %d\n", rank, y);
+                pixel_t *pixels = malloc(sizeof(pixel_t)*H*W + 1);  /* Reserve memory to allocate colour pixels */
+
+                y = myRecvArr[0];
+                printf(" Process[%d] => completing chunk %d\n", rank, y);
 
                 #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, y, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
                 /* loop through every pixel */                
@@ -130,7 +140,7 @@ int main(int argc, char *argv[])
                         /* If the point is outside the circle with radius 2: stop */
                         if((newRe * newRe + newIm * newIm) > 4) break;
                     }
-                    
+                    /*
                     if(i == MAXITER)
                     {
                         pixels[y*W + x][0] = 0;
@@ -144,12 +154,15 @@ int main(int argc, char *argv[])
                         pixels[y*W + x][0] = brightness;
                         pixels[y*W + x][1] = brightness;
                         pixels[y*W + x][2] = 255;                
-                    }              
+                    }        */      
                 }
+
+                printf(" Process[%d] => finished chunk %d calculation\n", rank, y);
 
                 // Tell master work is done and ready to send
                 mySendArr[0] = -2;
                 MPI_Send(mySendArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                printf(" Process[%d] => sending that I finished the work with chunk %d\n", rank, y);
 
                 // Send work
                 mySendArr[0] = y; // Chunk row
@@ -159,12 +172,13 @@ int main(int argc, char *argv[])
 
                 // Send all pixels
                 MPI_Send(mySendArr, H*W + 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                printf(" Process[%d] => Sending all pixels calculed\n", rank);
             }
         }
 
-        MPI_Finalize();
+        free(pixels);
 
-        
+        MPI_Finalize();
     }
 
     return 0;
