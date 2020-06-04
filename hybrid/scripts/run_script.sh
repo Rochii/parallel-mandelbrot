@@ -10,7 +10,7 @@
 #$ -cwd
 
 ## Parallel programming environment (mpich) to instantiate and number of computing slots.
-#$ -pe mpich 16
+#$ -pe mpich 2
 
 ##Passes an environment variable to the job
 #$ -v  OMP_NUM_THREADS=4
@@ -28,8 +28,8 @@ MPICH_MACHINES=$TMPDIR/mpich_machines
 cat $PE_HOSTFILE | awk '{print $1":"$2}' > $MPICH_MACHINES
 
 
-## In this line you have to write the command that will execute your application.
-mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_hybrid 6000 4000 10000
+## In this line you have to write the command that will execute your application
+mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_hybrid_static 600 400 10000
 
 
 rm -rf $MPICH_MACHINES

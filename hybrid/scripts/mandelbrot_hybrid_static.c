@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
     int n = (H * W) / size;
     
     // Worker: Row granularity
-    int begin = (rank * n) / W;
-    int end = (rank*n - 1) / W;
+    int begin = (rank*n) / W;
+    int end = ((rank+1)*n - 1) / W;
 
     printf("Process[%d] to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
 
@@ -95,20 +95,20 @@ int main(int argc, char *argv[])
                 int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)MAXITER);
                 pixels[y*W + x][0] = brightness;
                 pixels[y*W + x][1] = brightness;
-                pixels[y*W + x][2] = 255;                
-            }              
+                pixels[y*W + x][2] = 255;
+            }
         }
     }
 
     // Write pixels in a file
-    char filename[50];
+    char filename[100];
     int y_act, x_act;
     sprintf(filename, "../files/mandelbrot_hybrid_static_%d.ppm", rank);
     FILE *fp = fopen(filename, "wb");
     fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
     fprintf(fp, "%d %d\n255\n", W, (end-begin));
     
-    for(y_act = begin; y_act < end; y_act++){                
+    for(y_act = begin; y_act < end; y_act++){
         for(x_act = 0; x_act < W; x_act++){
             fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
         }
@@ -116,25 +116,28 @@ int main(int argc, char *argv[])
 
     fclose(fp);
 
+    printf(" Task %d finished\n", rank);
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Master concat images
     if(rank == 0)
     {
-        int proc, number;
-        char filename[50];
-        char command[size*50];
+        int proc;
+        char filename[100];
+        char command[size*100];
 
         strcpy(command, "convert ");
         for(proc = 0; proc < size; proc++)
         {
-            sprintf(filename, "../files/mandelbrot_hybrid_static_%d.ppm ", number);
+            sprintf(filename, "../files/mandelbrot_hybrid_static_%d.ppm ", proc);
             strcat(command, filename);
             memset(filename, 0, sizeof(filename));
         }
         strcat(command, "-append ../files/mandelbrot_hybrid_static.png");
         //printf("Command: %s\n", command);
 
+        printf(" All tasks finished. Executing command: %s\n", command);
         FILE *fp = popen(command, "w");
         fclose(fp);
 
@@ -143,8 +146,9 @@ int main(int argc, char *argv[])
         toc = clock();
         printf("Task: %d - Time (Wtime): %f - Time (clock): %f\n", rank, (time_e-time_s), (double)((toc-tic) / CLOCKS_PER_SEC));
     }
-
-    MPI_Finalize();
+    else{
+        MPI_Finalize();
+    }
 
     return 0;
 }
