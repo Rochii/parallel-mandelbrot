@@ -113,11 +113,9 @@ int main(int argc, char *argv[])
             fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
         }
     }
-
+    
     fclose(fp);
-
     printf(" Task %d finished\n", rank);
-
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Master concat images
