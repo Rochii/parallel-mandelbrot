@@ -46,11 +46,25 @@ int main(int argc, char *argv[])
 
 
     // Total number of pixels to divide
-    int n = (H * W) / size;
-    
-    // Worker: Row granularity
-    int begin = (rank*n) / W;
-    int end = ((rank+1)*n - 1) / W;
+    int n = (H*W) / size;
+    int total_work = H;
+    int unit_work = H / size;
+
+    // 500 / 3 = 166;
+
+    /*
+        - size = 3
+        - total_work = 500
+        - unit_work = 166
+
+        0 -> (0, 165)
+        1 -> (166, 331)
+        2 -> (332, 499)
+    */
+
+    // If is the last process get the remaining work
+    int begin = rank*unit_work;
+    int end = rank == size-1 ? total_work - 1 : (rank+1)*unit_work -1;
 
     printf("Process[%d] to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
 
@@ -58,7 +72,7 @@ int main(int argc, char *argv[])
 
     #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, y, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
     /* loop through every pixel */
-    for(y = begin; y < end; y++)
+    for(y = begin; y <= end; y++)
     {
         for(x = 0; x < W; x++)
         {
@@ -91,7 +105,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                double z = sqrt(newRe * n* newIm);
+                double z = sqrt(newRe * n * newIm);
                 int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)MAXITER);
                 pixels[y*W + x][0] = brightness;
                 pixels[y*W + x][1] = brightness;
@@ -108,7 +122,7 @@ int main(int argc, char *argv[])
     fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
     fprintf(fp, "%d %d\n255\n", W, (end-begin));
     
-    for(y_act = begin; y_act < end; y_act++){
+    for(y_act = begin; y_act <= end; y_act++){
         for(x_act = 0; x_act < W; x_act++){
             fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
         }
