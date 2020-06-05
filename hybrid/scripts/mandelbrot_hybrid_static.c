@@ -114,10 +114,10 @@ int main(int argc, char *argv[])
         for(x_act = 0; x_act < W; x_act++){
             fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
         }
-    }    
-    fclose(fp);
+    }
+    fclose(fp);   
     free(pixels);
-    
+
     printf(" Process[%d] => finished task\n", rank);
 
     MPI_Barrier(MPI_COMM_WORLD);
