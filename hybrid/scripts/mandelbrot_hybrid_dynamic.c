@@ -12,17 +12,18 @@ typedef unsigned char pixel_t[3]; // colors [R, G ,B]
 // Main program
 int main(int argc, char *argv[])
 {
-    int x, y;                                       /* Each iteration, it calculates: newz = oldz*oldz + p, where p is the current pixel, and oldz stars at the origin */
-    int rank, namelen, size, num;                   /* MPI world variables */
-    int W, H, MAXITER;                              /* Image width, height and number of mandel iterations */
-    double pr, pi;                                  /* Real and imaginary part of the pixel p */    
-    double newRe, newIm, oldRe, oldIm;              /* Real and imaginary parts of new and old z */    
-    double zoom = 1, moveX = -0.5, moveY = 0;       /* You can change these to zoom and change position */
-    double tic, toc, time_s, time_e;                /* MPI time variables */
-    char host[50];                                  /* Host buffer */
-    int myRecvArr[H*W + 1];                         /* Receive MPI array */
-    int mySendArr[H*W + 1];                         /* Send MPI array */
-    MPI_Status status;                              /* MPI status variable */
+    int x, y;                                           /* Each iteration, it calculates: newz = oldz*oldz + p, where p is the current pixel, and oldz stars at the origin */
+    int rank, namelen, size, num;                       /* MPI world variables */
+    int W, H, MAXITER;                                  /* Image width, height and number of mandel iterations */
+    double pr, pi;                                      /* Real and imaginary part of the pixel p */    
+    double newRe, newIm, oldRe, oldIm;                  /* Real and imaginary parts of new and old z */    
+    double zoom = 1, moveX = -0.5, moveY = 0;           /* You can change these to zoom and change position */
+    double tic, toc, time_s, time_e;                    /* MPI time variables */
+    char host[50];                                      /* Host buffer */
+    int *myRecvArr = (int *)malloc(H*W*sizeof(pixel_t) + 1);   /* Receive MPI array */
+    int *mySendArr = (int *)malloc(H*W*sizeof(pixel_t) + 1);   /* Send MPI array */
+
+    MPI_Status status;                                  /* MPI status variable */
 
     // Argument parsing
     if(argc == 4)
@@ -79,6 +80,9 @@ int main(int argc, char *argv[])
                 printf(" MASTER => received request to get worker[%d] results\n", status.MPI_SOURCE);
                 
                 // TODO: Append data to somewhere
+
+                // TODO: Clean receive array
+                free(myRecvArr);
             }
         }
 
@@ -163,18 +167,17 @@ int main(int argc, char *argv[])
 
                 // Send work
                 mySendArr[0] = y; // Chunk row
-                for(i = 1; i < H*W + 1; i++){
+                /*for(i = 1; i < y*W+1; i++){
                     mySendArr[i] = pixels[i-1];
-                }
+                }*/
 
                 // Send all pixels
-                MPI_Send(mySendArr, H*W + 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                //MPI_Send(mySendArr, 1*W + 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
                 printf(" Process[%d] => Sending all pixels calculed\n", rank);
-            }
+
+                //free(pixels);
+            }            
         }
-
-        free(pixels);
-
         MPI_Finalize();
     }
 

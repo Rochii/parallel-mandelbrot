@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
     #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, y, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
     /* loop through every pixel */
-    for(y = begin; y <= end; y++)
+    for(y = begin; y < end; y++)
     {
         for(x = 0; x < W; x++)
         {
@@ -100,6 +100,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    printf(" Process[%d] => writing pixels in a file\n", rank);
+
     // Write pixels in a file
     char filename[100];
     int y_act, x_act;
@@ -108,14 +110,16 @@ int main(int argc, char *argv[])
     fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
     fprintf(fp, "%d %d\n255\n", W, (end-begin));
     
-    for(y_act = begin; y_act <= end; y_act++){
+    for(y_act = begin; y_act < end; y_act++){
         for(x_act = 0; x_act < W; x_act++){
             fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
         }
-    }
-    
+    }    
     fclose(fp);
+    free(pixels);
+    
     printf(" Process[%d] => finished task\n", rank);
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Master concat images
@@ -124,6 +128,8 @@ int main(int argc, char *argv[])
         int proc;
         char filename[100];
         char command[size*100];
+
+        printf(" MASTER => all processes has finished\n");
 
         strcpy(command, "convert ");
         for(proc = 0; proc < size; proc++)
@@ -147,6 +153,7 @@ int main(int argc, char *argv[])
     else{
         MPI_Finalize();
     }
+    
 
     return 0;
 }
