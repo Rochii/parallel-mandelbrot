@@ -43,12 +43,9 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);           /* Get the rank of the process */
     MPI_Comm_size(MPI_COMM_WORLD, &size);           /* Get all the processes */
     MPI_Get_processor_name(host, &namelen);         /* Get the host */
-    
     time_s = MPI_Wtime();                           
     tic = clock();
-  
-    // Total number of pixels to divide
-    int n = (H * W) / (size-1);
+
 
     if(rank == 0) // Master
     {
@@ -140,7 +137,7 @@ int main(int argc, char *argv[])
                         /* If the point is outside the circle with radius 2: stop */
                         if((newRe * newRe + newIm * newIm) > 4) break;
                     }
-                    /*
+                    
                     if(i == MAXITER)
                     {
                         pixels[y*W + x][0] = 0;
@@ -149,12 +146,12 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                        double z = sqrt(newRe * n * newIm);
+                        double z = sqrt(newRe*newRe + newIm*newIm);
                         int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)MAXITER);
                         pixels[y*W + x][0] = brightness;
                         pixels[y*W + x][1] = brightness;
                         pixels[y*W + x][2] = 255;                
-                    }        */      
+                    }    
                 }
 
                 printf(" Process[%d] => finished chunk %d calculation\n", rank, y);

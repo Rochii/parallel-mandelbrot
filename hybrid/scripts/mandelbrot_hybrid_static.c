@@ -44,29 +44,15 @@ int main(int argc, char *argv[])
     time_s = MPI_Wtime();                           
     tic = clock();
 
-
     // Total number of pixels to divide
-    int n = (H*W) / size;
     int total_work = H;
     int unit_work = H / size;
-
-    // 500 / 3 = 166;
-
-    /*
-        - size = 3
-        - total_work = 500
-        - unit_work = 166
-
-        0 -> (0, 165)
-        1 -> (166, 331)
-        2 -> (332, 499)
-    */
 
     // If is the last process get the remaining work
     int begin = rank*unit_work;
     int end = rank == size-1 ? total_work - 1 : (rank+1)*unit_work -1;
 
-    printf("Process[%d] to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
+    printf(" Process[%d] => to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
 
     pixel_t *pixels = malloc(sizeof(pixel_t)*H*W + 1);  /* Reserve memory to allocate colour pixels */
 
@@ -105,7 +91,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                double z = sqrt(newRe * n * newIm);
+                double z = sqrt(newRe*newRe + newIm*newIm);
                 int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)MAXITER);
                 pixels[y*W + x][0] = brightness;
                 pixels[y*W + x][1] = brightness;
@@ -129,7 +115,7 @@ int main(int argc, char *argv[])
     }
     
     fclose(fp);
-    printf(" Task %d finished\n", rank);
+    printf(" Process[%d] => finished task\n", rank);
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Master concat images
@@ -149,7 +135,7 @@ int main(int argc, char *argv[])
         strcat(command, "-append ../files/mandelbrot_hybrid_static.png");
         //printf("Command: %s\n", command);
 
-        printf(" All tasks finished. Executing command: %s\n", command);
+        printf(" MASTER => all tasks finished. Executing command: %s\n", command);
         FILE *fp = popen(command, "w");
         fclose(fp);
 
