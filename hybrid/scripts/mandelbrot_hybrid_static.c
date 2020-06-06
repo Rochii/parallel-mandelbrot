@@ -44,15 +44,15 @@ int main(int argc, char *argv[])
     time_s = MPI_Wtime();                           
     tic = clock();
 
-
     // Total number of pixels to divide
-    int n = (H * W) / size;
-    
-    // Worker: Row granularity
-    int begin = (rank*n) / W;
-    int end = ((rank+1)*n - 1) / W;
+    int total_work = H;
+    int unit_work = H / size;
 
-    printf("Process[%d] to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
+    // If is the last process get the remaining work
+    int begin = rank*unit_work;
+    int end = rank == size-1 ? total_work - 1 : (rank+1)*unit_work -1;
+
+    printf(" Process[%d] => to complete %d rows with begin: %d and end: %d\n", rank, end-begin, begin, end);
 
     pixel_t *pixels = malloc(sizeof(pixel_t)*H*W + 1);  /* Reserve memory to allocate colour pixels */
 
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                double z = sqrt(newRe * n* newIm);
+                double z = sqrt(newRe*newRe + newIm*newIm);
                 int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2((double)MAXITER);
                 pixels[y*W + x][0] = brightness;
                 pixels[y*W + x][1] = brightness;
@@ -99,6 +99,8 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    printf(" Process[%d] => writing pixels in a file\n", rank);
 
     // Write pixels in a file
     char filename[100];
@@ -112,10 +114,12 @@ int main(int argc, char *argv[])
         for(x_act = 0; x_act < W; x_act++){
             fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
         }
-    }
-    
+    }    
     fclose(fp);
-    printf(" Task %d finished\n", rank);
+    free(pixels);
+    
+    printf(" Process[%d] => finished task\n", rank);
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Master concat images
@@ -124,6 +128,8 @@ int main(int argc, char *argv[])
         int proc;
         char filename[100];
         char command[size*100];
+
+        printf(" MASTER => all processes has finished\n");
 
         strcpy(command, "convert ");
         for(proc = 0; proc < size; proc++)
@@ -135,7 +141,7 @@ int main(int argc, char *argv[])
         strcat(command, "-append ../files/mandelbrot_hybrid_static.png");
         //printf("Command: %s\n", command);
 
-        printf(" All tasks finished. Executing command: %s\n", command);
+        printf(" MASTER => all tasks finished. Executing command: %s\n", command);
         FILE *fp = popen(command, "w");
         fclose(fp);
 
@@ -147,6 +153,7 @@ int main(int argc, char *argv[])
     else{
         MPI_Finalize();
     }
+    
 
     return 0;
 }

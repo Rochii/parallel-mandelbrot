@@ -13,7 +13,7 @@
 #$ -pe mpich 2
 
 ##Passes an environment variable to the job
-#$ -v  OMP_NUM_THREADS=4
+#$ -v  OMP_NUM_THREADS=1
 
 ## The  name  of  the  job.
 #$ -N rtv3
@@ -29,7 +29,7 @@ cat $PE_HOSTFILE | awk '{print $1":"$2}' > $MPICH_MACHINES
 
 
 ## In this line you have to write the command that will execute your application
-mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_hybrid_static 600 400 10000
+mpiexec -f $MPICH_MACHINES -n $NSLOTS ./mandelbrot_hybrid_dynamic 600 400 10000
 
 
 rm -rf $MPICH_MACHINES
