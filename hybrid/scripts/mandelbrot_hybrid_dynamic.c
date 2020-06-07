@@ -11,8 +11,7 @@
 
 // Main program
 int main(int argc, char *argv[])
-{
-    int x, y;                                           /* Each iteration, it calculates: newz = oldz*oldz + p, where p is the current pixel, and oldz stars at the origin */
+{                                               
     int rank, namelen, size, num;                       /* MPI world variables */
     int W, H, MAXITER;                                  /* Image width, height and number of mandel iterations */
     double pr, pi;                                      /* Real and imaginary part of the pixel p */    
@@ -44,15 +43,14 @@ int main(int argc, char *argv[])
     time_s = MPI_Wtime();                           
     tic = clock();
 
-    int myRecvArr[W+1][3];                                 /* Receive MPI array */
-    int mySendArr[W+1][3];                                 /* Send MPI array */
+    int myRecvArr[W+1][3];                              /* Receive MPI array */
+    int mySendArr[W+1][3];                              /* Send MPI array */
 
     // Initialize matrix's with 0's
-    for(x = 0; x < W+1; x++)
-    {
-        for(y = 0; y < 3; y++){
-            myRecvArr[x][y] = 0;
-            mySendArr[x][y] = 0;            
+    for(int j = 0; j < W+1; j++){
+        for(int k = 0; k < 3; k++){
+            myRecvArr[j][k] = 0;
+            mySendArr[j][k] = 0;            
         }
     }
 
@@ -64,7 +62,7 @@ int main(int argc, char *argv[])
         int recv_chunk = 0;
         int recv_chunks = 0;
         int workers_end = 0;
-        int pixel_result[H][W][3];        
+        unsigned char pixel_result[H][W][3];        
         
         mySendArr[0][0] = n_chunks;
 
@@ -104,27 +102,30 @@ int main(int argc, char *argv[])
             else if(myRecvArr[0][0] == -2)
             {
                 // Receive pixels from workers
-                MPI_Recv(&myRecvArr, W+1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
+                MPI_Recv(&myRecvArr, W*3 +1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
                 printf(" MASTER => received request to get worker[%d] results\n", status.MPI_SOURCE);
 
                 recv_chunk = myRecvArr[0][0];
                 recv_chunks++;
-
                 printf(" MASTER => Received chunk: %d Received chunks: %d\n", recv_chunk, recv_chunks);              
                                 
-/*
-                // TODO: Append data to pixel_result
-                for(x = 1; x < W+1; x++)
-                {
-                    for(y = 0; y < 3; y++){
-                        pixel_result[recv_chunk][x][y];
+                // Append data to pixel_result
+                for(int j = 1; j < W+1; j++){                    
+                    for(int k = 0; k < 3; k++){                        
+                        pixel_result[recv_chunk][j][k] = (unsigned char)myRecvArr[j][k];
                     }
                 }
-*/
             }
         }
+        printf(" MASTER => All chunks received and workers finalized\n");
 
-        printf(" MASTER => All chunks received\n");
+        // Write pixels in a file
+        char filename[50] = "../files/mandelbrot_hybrid_dynamic.ppm";    
+        FILE *fp = fopen(filename, "wb");
+        fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
+        fprintf(fp, "%d %d\n255\n", W, H);
+        fwrite(pixel_result, sizeof(unsigned char), sizeof(pixel_result), fp);
+        fclose(fp);
 
         time_e = MPI_Wtime();
         MPI_Finalize();
@@ -133,7 +134,7 @@ int main(int argc, char *argv[])
     }
     else // Worker
     {
-        int i;
+        int i, x;
         
         while(1)
         {
@@ -155,10 +156,10 @@ int main(int argc, char *argv[])
             {
                 int pixels[W][3];  /* Reserve memory to allocate colour pixels */
 
-                y = myRecvArr[0][0];
+                int y = myRecvArr[0][0];
                 printf(" Process[%d] => completing chunk %d\n", rank, y);
 
-                #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, y, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
+                #pragma omp parallel for shared(pixels, moveX, moveY, zoom) private(x, pr, pi, newRe, newIm, oldRe, oldIm)  schedule(dynamic)
                 /* loop through every pixel */                
                 for(x = 0; x < W; x++)
                 {
@@ -209,15 +210,14 @@ int main(int argc, char *argv[])
 
                 // Send work
                 mySendArr[0][0] = y; // Chunk row
-                int k;
-                for(i = 1; i < W+1; i++){
-                    for(k = 0; k < 3; k++){
-                        mySendArr[i][k] = pixels[i-1][k];
+                for(int j = 1; j < W+1; j++){
+                    for(int k = 0; k < 3; k++){
+                        mySendArr[j][k] = pixels[j-1][k];
                     }
                 }
 
                 // Send all pixels to the MASTER
-                MPI_Send(&mySendArr, W+1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                MPI_Send(&mySendArr, W*3 +1, MPI_INT, 0, 0, MPI_COMM_WORLD);
                 printf(" Process[%d] => Sending all pixels calculated\n", rank);
             }            
         }
@@ -226,22 +226,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-/*
-        // Write pixels in a file
-        char filename[50];
-        int y_act, x_act;
-
-        sprintf(filename, "../files/mandelbrot_hybrid_%d.ppm", rank);
-        FILE *fp = fopen(filename, "wb");
-        fprintf(fp, "P6\n# CREATOR: Roger Truchero\n");
-        fprintf(fp, "%d %d\n255\n", W, (end-begin));
-        
-        for(y_act = begin; y_act < end; y_act++){                
-            for(x_act = 0; x_act < W; x_act++){
-                fwrite(pixels[y_act*W + x_act], 1, sizeof(pixel_t), fp);
-            }
-        }
-
-        fclose(fp);
-*/

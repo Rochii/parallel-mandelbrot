@@ -10,7 +10,7 @@
 #$ -cwd
 
 ## Parallel programming environment (mpich) to instantiate and number of computing slots.
-#$ -pe mpich 2
+#$ -pe mpich 8
 
 ##Passes an environment variable to the job
 #$ -v  OMP_NUM_THREADS=1
