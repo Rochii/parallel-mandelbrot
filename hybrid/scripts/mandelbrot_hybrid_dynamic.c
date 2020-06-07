@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
     double zoom = 1, moveX = -0.5, moveY = 0;           /* You can change these to zoom and change position */
     double tic, toc, time_s, time_e;                    /* MPI time variables */
     char host[50];                                      /* Host buffer */
-
     MPI_Status status;                                  /* MPI status variable */
 
     // Argument parsing
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
     int mySendArr[W+1][3];                                 /* Send MPI array */
 
     // Initialize matrix's with 0's
-    for(x = 0; x < W; x++)
+    for(x = 0; x < W+1; x++)
     {
         for(y = 0; y < 3; y++){
             myRecvArr[x][y] = 0;
@@ -62,41 +61,70 @@ int main(int argc, char *argv[])
         // Get the number of chunks (number of rows)
         int n_chunks = 0;
         int total_chunks = H;
-        int recv_chunk;
-
+        int recv_chunk = 0;
+        int recv_chunks = 0;
+        int workers_end = 0;
+        int pixel_result[H][W][3];        
+        
         mySendArr[0][0] = n_chunks;
 
-        // While we have chunks
-        while(n_chunks < total_chunks)
-        {    
-            printf(" MASTER => waiting for worker request. n_chunks: %d total_chunks: %d\n", n_chunks, total_chunks);        
+        // Until we have received all the pieces, still waiting for requests
+        while(recv_chunks < total_chunks || workers_end < size-1)
+        {
+            printf(" MASTER => waiting for worker request. n_chunks: %d total_chunks: %d recv_chunks: %d workers_end: %d\n", n_chunks, total_chunks, recv_chunks, workers_end);        
 
             // Receive worker requests
-            MPI_Recv(myRecvArr, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(&myRecvArr, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
             printf(" MASTER => received request from worker[%d]\n", status.MPI_SOURCE);
 
             // Worker want more work
             if(myRecvArr[0][0] == -1)
             {
-                // Send chunk to the worker and increase the next chunk to send
-                MPI_Send(mySendArr, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
-                printf(" MASTER => received work request from worker[%d]\n", status.MPI_SOURCE);
+                // If no more work to send
+                if(n_chunks == total_chunks)
+                {
+                    printf(" MASTER => no more work to send, n_chunks: %d\n", n_chunks);
+                    mySendArr[0][0] = -1;
+                    MPI_Send(&mySendArr, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+                    workers_end++;
+                }
+                else
+                {              
+                    mySendArr[0][0] = n_chunks;
 
-                n_chunks++;
-                mySendArr[0][0] = n_chunks;
+                    // Send chunk to the worker and increase the next chunk to send
+                    printf(" MASTER => sending chunk %d to worker[%d]\n", n_chunks, status.MPI_SOURCE);
+                    MPI_Send(&mySendArr, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+
+                    n_chunks++;                    
+                    printf(" MASTER => Next chunk to send: %d\n", n_chunks);
+                }                
             }
             // Worker want to send finished work
             else if(myRecvArr[0][0] == -2)
             {
                 // Receive pixels from workers
-                MPI_Recv(myRecvArr, W+1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
+                MPI_Recv(&myRecvArr, W+1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
                 printf(" MASTER => received request to get worker[%d] results\n", status.MPI_SOURCE);
 
                 recv_chunk = myRecvArr[0][0];
-                printf(" MASTER => Received chunk: %d\n", recv_chunk);
-                // TODO: Append data to somewhere
+                recv_chunks++;
+
+                printf(" MASTER => Received chunk: %d Received chunks: %d\n", recv_chunk, recv_chunks);              
+                                
+/*
+                // TODO: Append data to pixel_result
+                for(x = 1; x < W+1; x++)
+                {
+                    for(y = 0; y < 3; y++){
+                        pixel_result[recv_chunk][x][y];
+                    }
+                }
+*/
             }
         }
+
+        printf(" MASTER => All chunks received\n");
 
         time_e = MPI_Wtime();
         MPI_Finalize();
@@ -106,16 +134,16 @@ int main(int argc, char *argv[])
     else // Worker
     {
         int i;
-
+        
         while(1)
         {
             // Ask master for work
             mySendArr[0][0] = -1;
-            MPI_Send(mySendArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(&mySendArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
             printf(" Process[%d] => sending work request to master\n", rank);
 
             // Recv response (starting number or -1)
-            MPI_Recv(myRecvArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(&myRecvArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
             printf(" Process[%d] => received master message\n", rank);
 
             // -1 means no more data to process, break the loop
@@ -149,8 +177,8 @@ int main(int argc, char *argv[])
                         oldIm = newIm;
 
                         /* The actual iteration, the real and imaginary part are calculated */
-                        newRe = oldRe * oldRe - oldIm * oldIm + pr;
-                        newIm = 2 * oldRe * oldIm + pi;
+                        newRe = oldRe*oldRe - oldIm*oldIm + pr;
+                        newIm = 2*oldRe*oldIm + pi;
                         
                         /* If the point is outside the circle with radius 2: stop */
                         if((newRe * newRe + newIm * newIm) > 4) break;
@@ -176,10 +204,8 @@ int main(int argc, char *argv[])
 
                 // Tell master work is done and ready to send
                 mySendArr[0][0] = -2;
-                MPI_Send(mySendArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                MPI_Send(&mySendArr, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
                 printf(" Process[%d] => sending that I finished the work with chunk %d\n", rank, y);
-
-                //printf(" Process[%d] => sizeof(pixels): %d\n", rank, sizeof(pixels));
 
                 // Send work
                 mySendArr[0][0] = y; // Chunk row
@@ -190,10 +216,8 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                //printf(" Process[%d] => sizeof(mySendArr): %d\n", rank, sizeof(mySendArr));
-
-                // Send all pixels
-                MPI_Send(mySendArr, W+1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+                // Send all pixels to the MASTER
+                MPI_Send(&mySendArr, W+1, MPI_INT, 0, 0, MPI_COMM_WORLD);
                 printf(" Process[%d] => Sending all pixels calculated\n", rank);
             }            
         }
