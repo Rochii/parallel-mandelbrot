@@ -7,12 +7,12 @@
 #include "mpi.h"
 #include <omp.h>
 
-//typedef unsigned char pixel_t[3]; // colors [R, G ,B]
+#define CHUNK_SIZE 100;                                 /* Calculation blocks */
 
 // Main program
 int main(int argc, char *argv[])
 {                                               
-    int rank, namelen, size, num;                       /* MPI world variables */
+    int rank, namelen, size, num;                       /* MPI world variables */    
     int W, H, MAXITER;                                  /* Image width, height and number of mandel iterations */
     double pr, pi;                                      /* Real and imaginary part of the pixel p */    
     double newRe, newIm, oldRe, oldIm;                  /* Real and imaginary parts of new and old z */    
@@ -46,14 +46,6 @@ int main(int argc, char *argv[])
     int myRecvArr[W+1][3];                              /* Receive MPI array */
     int mySendArr[W+1][3];                              /* Send MPI array */
 
-    // Initialize matrix's with 0's
-    for(int j = 0; j < W+1; j++){
-        for(int k = 0; k < 3; k++){
-            myRecvArr[j][k] = 0;
-            mySendArr[j][k] = 0;            
-        }
-    }
-
     if(rank == 0) // Master
     {
         // Get the number of chunks (number of rows)
@@ -63,22 +55,19 @@ int main(int argc, char *argv[])
         int recv_chunks = 0;
         int workers_end = 0;
         unsigned char pixel_result[H][W][3];        
-        
-        mySendArr[0][0] = n_chunks;
 
         // Until we have received all the pieces, still waiting for requests
         while(recv_chunks < total_chunks || workers_end < size-1)
         {
-            printf(" MASTER => waiting for worker request. n_chunks: %d total_chunks: %d recv_chunks: %d workers_end: %d\n", n_chunks, total_chunks, recv_chunks, workers_end);        
-
             // Receive worker requests
+            printf(" MASTER => waiting for worker request. n_chunks: %d total_chunks: %d recv_chunks: %d workers_end: %d\n", n_chunks, total_chunks, recv_chunks, workers_end);                    
             MPI_Recv(&myRecvArr, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
             printf(" MASTER => received request from worker[%d]\n", status.MPI_SOURCE);
 
             // Worker want more work
             if(myRecvArr[0][0] == -1)
             {
-                // If no more work to send
+                // If no more work to send, send -1 to worker (to break)
                 if(n_chunks == total_chunks)
                 {
                     printf(" MASTER => no more work to send, n_chunks: %d\n", n_chunks);
@@ -87,14 +76,12 @@ int main(int argc, char *argv[])
                     workers_end++;
                 }
                 else
-                {              
-                    mySendArr[0][0] = n_chunks;
-
+                {                                  
                     // Send chunk to the worker and increase the next chunk to send
+                    mySendArr[0][0] = n_chunks;
                     printf(" MASTER => sending chunk %d to worker[%d]\n", n_chunks, status.MPI_SOURCE);
                     MPI_Send(&mySendArr, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
-
-                    n_chunks++;                    
+                    n_chunks++;
                     printf(" MASTER => Next chunk to send: %d\n", n_chunks);
                 }                
             }
@@ -105,12 +92,13 @@ int main(int argc, char *argv[])
                 MPI_Recv(&myRecvArr, W*3 +1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, &status);
                 printf(" MASTER => received request to get worker[%d] results\n", status.MPI_SOURCE);
 
+                // Get the chunk number received and increment the number of chunks received
                 recv_chunk = myRecvArr[0][0];
                 recv_chunks++;
                 printf(" MASTER => Received chunk: %d Received chunks: %d\n", recv_chunk, recv_chunks);              
                                 
-                // Append data to pixel_result
-                for(int j = 1; j < W+1; j++){                    
+                // Append data to pixel_result    
+                for(int j = 1; j < W+1; j++){ 
                     for(int k = 0; k < 3; k++){                        
                         pixel_result[recv_chunk][j][k] = (unsigned char)myRecvArr[j][k];
                     }
@@ -127,6 +115,7 @@ int main(int argc, char *argv[])
         fwrite(pixel_result, sizeof(unsigned char), sizeof(pixel_result), fp);
         fclose(fp);
 
+        // Finalize master and calculate mpi time
         time_e = MPI_Wtime();
         MPI_Finalize();
         toc = clock();
